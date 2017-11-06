@@ -8,8 +8,10 @@
 #include <QAuthenticator>
 #include <QNetworkReply>
 #include <QJsonDocument>
+#include <QMouseEvent>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QMouseEvent>
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -19,6 +21,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ///
     man = new QNetworkAccessManager(this);
+
+    //connect widget and treewidget
+    connect(ui->treeWidget, SIGNAL(signal_rightPress(QMouseEvent*)),
+            this, SLOT(slot_mousePressEvent(QMouseEvent*)));
 }
 
 MainWindow::~MainWindow()
@@ -293,3 +299,35 @@ void MainWindow::on_action_3_triggered()
         }
     }
 }
+
+void MainWindow::slot_mousePressEvent(QMouseEvent* event)
+{
+    if(event->button() == Qt::RightButton)
+    {
+        QTreeWidgetItem* item = ui->treeWidget->itemAt(event->pos());
+        if(item != nullptr)
+        {
+            if(item->parent() == nullptr)
+            {
+               //一级的 ITEM
+                QMenu menu;
+                menu.addAction("添加该类型设备");
+                menu.exec(event->globalPos());
+            }else
+            {
+
+            }
+        }else
+        {
+            QMenu menu;
+            menu.addAction("添加设备类型");
+            menu.exec(event->globalPos());
+        }
+    }
+    return ;
+}
+
+
+
+
+

@@ -41,6 +41,9 @@ private slots:
     //
     void on_action_3_triggered();
 
+
+    void slot_mousePressEvent(QMouseEvent* event);
+
 private:
     void AddDeviceType(const QString& DeviceType);
     void AddDeviceName(const QString& DeviceType, const QString& DeviceName);

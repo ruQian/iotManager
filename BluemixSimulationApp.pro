@@ -20,7 +20,8 @@ SOURCES += main.cpp\
     adddevtdialog.cpp \
     adddevtsigdlg.cpp \
     adddevicedialog.cpp \
-    adddevicesdialog.cpp
+    adddevicesdialog.cpp \
+    customtreewidget.cpp
 
 HEADERS  += mainwindow.h \
     settingdialog.h \
@@ -28,7 +29,8 @@ HEADERS  += mainwindow.h \
     adddevtsigdlg.h \
     types.h \
     adddevicedialog.h \
-    adddevicesdialog.h
+    adddevicesdialog.h \
+    customtreewidget.h
 
 FORMS    += mainwindow.ui \
     settingdialog.ui \

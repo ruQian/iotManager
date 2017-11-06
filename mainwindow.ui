@@ -57,7 +57,7 @@
    <widget class="QWidget" name="dockWidgetContents">
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
-      <widget class="QTreeWidget" name="treeWidget">
+      <widget class="CCustomTreeWidget" name="treeWidget">
        <column>
         <property name="text">
          <string notr="true">1</string>
@@ -95,6 +95,13 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>CCustomTreeWidget</class>
+   <extends>QTreeWidget</extends>
+   <header location="global">customtreewidget.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
