@@ -439,7 +439,6 @@ void MainWindow::slot_mousePressEvent(QMouseEvent* event)
                                 for(QVariantList::Iterator it = devInfoList.begin();
                                             it != devInfoList.end(); ++it)
                                 {
-                                    qDebug()<<*it;
                                     QVariantMap map = (*it).toMap();
                                     if(map["deviceId"].toString() == deviceId &&
                                            map["typeId"].toString() == itemName)

@@ -1,5 +1,9 @@
 #include "qiotdevthread.h"
 #include <QEventLoop>
+
+QAtomicInt g_iotDevCountSu = 0;
+QAtomicInt g_iotDevCountFa = 0;
+
 CQIotDevThread::CQIotDevThread(QObject *parent) : QThread(parent)
 {
     moveToThread(this);
@@ -35,9 +39,11 @@ void CQIotDevThread::run()
         eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
         if(client->isConnectedToHost())
         {
-            qDebug()<<"连接成功！！！";
+            g_iotDevCountSu++;
+            qDebug()<<"连接成功, 成功数量 : "<<g_iotDevCountSu;
         }else{
-            qDebug()<<"连接失败！！！";
+            g_iotDevCountFa++;
+            qDebug()<<"连接失败, 失败数量 : "<<g_iotDevCountFa;
         }
 
 
