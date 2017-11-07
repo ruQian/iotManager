@@ -12,6 +12,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QMouseEvent>
+#include <QMenu>
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -318,12 +319,73 @@ void MainWindow::slot_mousePressEvent(QMouseEvent* event)
         QTreeWidgetItem* item = ui->treeWidget->itemAt(event->pos());
         if(item != nullptr)
         {
+            QString itemName = item->text(0);
             if(item->parent() == nullptr)
             {
                //一级的 ITEM
                 QMenu menu;
                 menu.addAction("添加该类型设备");
-                menu.exec(event->globalPos());
+                menu.addAction("批量添加该类型设备");
+                qDebug()<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+                QAction* ac = menu.exec(event->globalPos());
+                if(ac != nullptr)
+                {
+                    qDebug()<<"-------------------------------------------";
+                    if(ac->text() == QString("添加该类型设备"))
+                    {
+                        //同步服务器数据
+                        CAddDeviceDialog dlg;
+                        QList<DeviceType> devTypeListTmp;
+                        DeviceType deviceType;
+                        deviceType.mDevType = itemName;
+                        devTypeListTmp<<deviceType;
+                        dlg.initDevType(devTypeListTmp);
+                        int res = dlg.exec();
+                        if(res == 8)
+                        {
+                            QList<DeviceInfo> devList;
+                            DeviceInfo devinfo;
+                            devinfo.mDevType = dlg.strDeviceType;
+                            devinfo.mDevID = dlg.strDeviceID;
+                            devList<<devinfo;
+                            slot_addDev(devList);
+                        }
+                    }
+                    if(ac->text() == QString("批量添加该类型设备"))
+                    {
+                        //批量添加
+
+                        //批量添加设备
+                        CAddDevicesDialog dlg;
+                        QList<DeviceType> devTypeListTmp;
+                        DeviceType deviceType;
+                        deviceType.mDevType = itemName;
+                        devTypeListTmp<<deviceType;
+                        dlg.initDevType(devTypeListTmp);
+                        int res = dlg.exec();
+                        if(res == 8)
+                        {
+                            //创建设备
+                            QString strName = dlg.strPreName;
+                            int strCount = dlg.strCount.toInt();
+                            QString strDevType = dlg.strDevType;
+                            for(int i = 0; i< strCount; i++)
+                            {
+                                QString strDevID = QString("%1_%2").arg(strName).arg(i);
+
+                                QList<DeviceInfo> devList;
+                                DeviceInfo devinfo;
+                                devinfo.mDevType = strDevType;
+                                devinfo.mDevID = strDevID;
+                                devList<<devinfo;
+                                slot_addDev(devList);
+                            }
+                        }
+                    }
+                }else
+                {
+
+                }
             }else
             {
 
@@ -333,7 +395,21 @@ void MainWindow::slot_mousePressEvent(QMouseEvent* event)
             QMenu menu;
             menu.addAction("同步服务器数据");
             menu.addAction("添加设备类型");
-            menu.exec(event->globalPos());
+            qDebug()<<"-------------------------------------------";
+            QAction* ac = menu.exec(event->globalPos());
+            if(ac != nullptr)
+            {
+                qDebug()<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+                if(ac->text() == QString("同步服务器数据"))
+                {
+                    //同步服务器数据
+                    on_action_2_triggered();
+                }
+                if(ac->text() == QString("添加设备类型"))
+                {
+                    on_actionADevT_triggered();
+                }
+            }
         }
     }
     return ;
