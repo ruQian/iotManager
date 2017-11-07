@@ -362,11 +362,10 @@ void MainWindow::slot_mousePressEvent(QMouseEvent* event)
                 QMenu menu;
                 menu.addAction("添加该类型设备");
                 menu.addAction("批量添加该类型设备");
-                qDebug()<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+                menu.addAction("仿真该类型所有设备");
                 QAction* ac = menu.exec(event->globalPos());
                 if(ac != nullptr)
                 {
-                    qDebug()<<"-------------------------------------------";
                     if(ac->text() == QString("添加该类型设备"))
                     {
                         //同步服务器数据
@@ -418,6 +417,43 @@ void MainWindow::slot_mousePressEvent(QMouseEvent* event)
                             }
                         }
                     }
+                    if(ac->text() == QString("仿真该类型所有设备"))
+                    {
+                        //得到该类型下的所有节点
+                        int childCount = item->childCount();
+                        for(int i = 0; i < childCount; ++i)
+                        {
+                            QTreeWidgetItem* hildItem = item->child(i);
+                            if(hildItem != nullptr)
+                            {
+                                //设备ID
+                                QString deviceId = hildItem->text(0);
+
+                                QFile file(deviceInfoPath);
+                                file.open(QFile::ReadWrite);
+                                QByteArray bytes = file.readAll();
+                                QJsonDocument filed = QJsonDocument::fromJson(bytes);
+                                QJsonArray arf = filed.array();
+                                //
+                                QVariantList devInfoList = arf.toVariantList();
+                                for(QVariantList::Iterator it = devInfoList.begin();
+                                            it != devInfoList.end(); ++it)
+                                {
+                                    qDebug()<<*it;
+                                    QVariantMap map = (*it).toMap();
+                                    if(map["deviceId"].toString() == deviceId &&
+                                           map["typeId"].toString() == itemName)
+                                    {
+                                        SimulationDev(map);
+                                    }
+                                }
+
+                            }
+                        }
+
+
+
+                    }
                 }else
                 {
 
@@ -451,7 +487,10 @@ void MainWindow::slot_mousePressEvent(QMouseEvent* event)
     return ;
 }
 
-
+void MainWindow::SimulationDev(const QVariant& var)
+{
+    mIotSimulation.SimulationDev(var);
+}
 
 
 
