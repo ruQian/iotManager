@@ -53,7 +53,10 @@ private:
     QNetworkAccessManager* man;
     QString hosts;
 public:
+    //存放创建设备的信息文件
+    QString deviceInfoPath;
     QList<DeviceType> devTypeList;
+
 private:
     Ui::MainWindow *ui;
 };

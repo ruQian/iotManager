@@ -18,6 +18,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+
+
+    deviceInfoPath = QCoreApplication::applicationDirPath();
+    deviceInfoPath += "/devicesInfo.txt";
+    qDebug()<<deviceInfoPath;
+
     mSettingDlg = new CSettingDialog(this);
 
     ///
@@ -283,7 +290,36 @@ void MainWindow::slot_addDev(const QList<DeviceInfo>& deviceInfos)
         QByteArray replyData = reply->readAll();
         reply->deleteLater();
         reply = nullptr;
-        qDebug()<<replyData;
+        //qDebug()<<replyData;
+
+        QJsonDocument d = QJsonDocument::fromJson(replyData);
+        QJsonObject sett2 = d.object();
+
+        QVariantMap mapInfo;
+
+        qDebug()<<sett2.value(QString("authToken")).toString();
+        mapInfo["clientId"] =  sett2.value(QString("clientId")).toString();
+        mapInfo["typeId"] = sett2.value(QString("typeId")).toString();
+        mapInfo["deviceId"] = sett2.value(QString("deviceId")).toString();
+        mapInfo["authToken"] = sett2.value(QString("authToken")).toString();
+
+
+        qDebug()<<mapInfo;
+
+
+        //追加到文件里面
+        QFile file(deviceInfoPath);
+        file.open(QFile::ReadWrite);
+        QByteArray bytes = file.readAll();
+        file.resize(0);
+        QJsonDocument filed = QJsonDocument::fromJson(bytes);
+        QJsonArray arf = filed.array();
+        QJsonValue jvalue = QJsonValue::fromVariant(mapInfo);
+        arf.append(jvalue);
+        filed.setArray(arf);
+        bytes = filed.toJson();
+        file.write(bytes);
+        file.close();
     }
 }
 void MainWindow::on_action_3_triggered()
