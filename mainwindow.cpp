@@ -122,6 +122,13 @@ void MainWindow::GetDeviceByType(const QString& DeviceType)
     QJsonValue value = sett2.value(QString("results"));
     qDebug()<<value;
     QJsonArray item = value.toArray();
+    qDebug()<<replyData;
+    QFile file("D://devinfo.info");
+    if(file.open(QFile::ReadWrite))
+    {
+        file.write(replyData);
+        file.close();
+    }
     for(int i = 0; i < item.count(); ++i)
     {
         QJsonValue value = item.at(i);
@@ -129,7 +136,11 @@ void MainWindow::GetDeviceByType(const QString& DeviceType)
         QString strDevice = value.toObject()["deviceId"].toString();
         qDebug()<<strDevice;
 
-        AddDeviceName(DeviceType, strDevice);
+        QString strDeviceType = value.toObject()["typeId"].toString();
+        if(DeviceType == strDeviceType)
+        {
+            AddDeviceName(DeviceType, strDevice);
+        }
 
     }
 }
@@ -320,6 +331,7 @@ void MainWindow::slot_mousePressEvent(QMouseEvent* event)
         }else
         {
             QMenu menu;
+            menu.addAction("同步服务器数据");
             menu.addAction("添加设备类型");
             menu.exec(event->globalPos());
         }
