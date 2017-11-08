@@ -23,7 +23,8 @@ SOURCES += main.cpp\
     adddevicesdialog.cpp \
     customtreewidget.cpp \
     iotsimulation.cpp \
-    qiotdevthread.cpp
+    qiotdevthread.cpp \
+    simulationsetdialog.cpp
 
 HEADERS  += mainwindow.h \
     settingdialog.h \
@@ -34,14 +35,16 @@ HEADERS  += mainwindow.h \
     adddevicesdialog.h \
     customtreewidget.h \
     iotsimulation.h \
-    qiotdevthread.h
+    qiotdevthread.h \
+    simulationsetdialog.h
 
 FORMS    += mainwindow.ui \
     settingdialog.ui \
     adddevtdialog.ui \
     adddevtsigdlg.ui \
     adddevicedialog.ui \
-    adddevicesdialog.ui
+    adddevicesdialog.ui \
+    simulationsetdialog.ui
 
 
 

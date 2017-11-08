@@ -2,6 +2,7 @@
 #define CQIOTDEVTHREAD_H
 #include <QThread>
 #include <QTimer>
+#include "types.h"
 #include "mqtt/qmqtt.h"
 class CQIotDevThread : public QThread
 {
@@ -20,7 +21,12 @@ public:
     QString strPwd;
 
 
-    QTimer mTimerPub;
+    QTimer* mTimerPub;
+
+    simulationConfig mConfig;
+
+    double lat;
+    double lon;
 protected:
     virtual void run();
 signals:

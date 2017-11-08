@@ -48,7 +48,7 @@ private slots:
 private:
     void AddDeviceType(const QString& DeviceType);
     void AddDeviceName(const QString& DeviceType, const QString& DeviceName);
-    void GetDeviceByType(const QString& DeviceType);
+    void GetDeviceByType(/*const QString& DeviceType,*/ const QString& bookMark = QString());
     //仿真一个设备！
     void SimulationDev(const QVariant& var);
 private:

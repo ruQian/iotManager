@@ -8,9 +8,7 @@ CQIotDevThread::CQIotDevThread(QObject *parent) : QThread(parent)
 {
     moveToThread(this);
     client = nullptr;
-    connect(&mTimerPub, SIGNAL(timeout()), this, SLOT(slot_timeout()));
-
-    mTimerPub.start(10000);
+    mTimerPub = nullptr;
 }
 
 void CQIotDevThread::run()
@@ -18,7 +16,12 @@ void CQIotDevThread::run()
     client = new QMQTT::Client(QHostAddress::LocalHost, 1883);
     if(client != nullptr)
     {
-
+        //
+        mTimerPub = new QTimer(this);
+        connect(mTimerPub, SIGNAL(timeout()), this, SLOT(slot_timeout()));
+        int interval = mConfig.interval == 0 ? 10000 : mConfig.interval*1000;
+        mTimerPub->start(interval);
+        //
         connect(client, SIGNAL(error(const QMQTT::ClientError)),
                 this, SLOT(slot_error(const QMQTT::ClientError)));
         connect(client, SIGNAL(disconnected( )),
@@ -45,8 +48,6 @@ void CQIotDevThread::run()
             g_iotDevCountFa++;
             qDebug()<<"连接失败, 失败数量 : "<<g_iotDevCountFa;
         }
-
-
     }
     exec();
 }
@@ -56,7 +57,10 @@ void CQIotDevThread::slot_timeout()
     {
         QMQTT::Message message;
         message.setTopic("iot-2/evt/status/fmt/json");
-        QString str = "{\"tmp\":100}";
+        QString gisInfo;
+        gisInfo = QString("{\"lon\":%1,\"lat\":%2}").arg(lon).arg(lat);
+        QString str = mConfig.strData.isEmpty()?gisInfo:mConfig.strData;
+        qDebug()<<strClientId<<str;
         message.setPayload(str.toUtf8());
         client->publish(message);
     }

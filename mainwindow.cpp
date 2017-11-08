@@ -4,6 +4,7 @@
 #include "adddevicedialog.h"
 #include "settingdialog.h"
 #include "adddevtdialog.h"
+#include "SimulationSetDialog.h"
 #include <QNetworkRequest>
 #include <QAuthenticator>
 #include <QNetworkReply>
@@ -102,17 +103,22 @@ void MainWindow::on_action_2_triggered()
         DeviceType devtype;
         devtype.mDevType = strDevice;
         devTypeList.append(devtype);
-        GetDeviceByType(strDevice);
     }
+    GetDeviceByType();
 }
-void MainWindow::GetDeviceByType(const QString& DeviceType)
+void MainWindow::GetDeviceByType(/*const QString& DeviceType,*/
+                                 const QString& bookMark)
 {
     QString strUrl = "https://";
     strUrl += mSettingDlg->mOrg;
     strUrl += mSettingDlg->mHost;
-    strUrl += "/api/v0002/device/types/";
-    strUrl += DeviceType;
-    strUrl += "/devices";
+    strUrl += "/api/v0002/bulk/devices";
+    strUrl += "?_limit=100";
+    if(!bookMark.isEmpty())
+    {
+        strUrl+="&_bookmark=";
+        strUrl+=bookMark;
+    }
     qDebug()<<strUrl;
     QNetworkRequest request;
     request.setRawHeader("Authorization","Basic YS14OGtiazgtcmtxYjR4MW53NzpOK3dIIXVRYysmanZvR1N3a0U=");
@@ -131,12 +137,7 @@ void MainWindow::GetDeviceByType(const QString& DeviceType)
     qDebug()<<value;
     QJsonArray item = value.toArray();
     qDebug()<<replyData;
-    QFile file("D://devinfo.info");
-    if(file.open(QFile::ReadWrite))
-    {
-        file.write(replyData);
-        file.close();
-    }
+
     for(int i = 0; i < item.count(); ++i)
     {
         QJsonValue value = item.at(i);
@@ -145,11 +146,17 @@ void MainWindow::GetDeviceByType(const QString& DeviceType)
         qDebug()<<strDevice;
 
         QString strDeviceType = value.toObject()["typeId"].toString();
-        if(DeviceType == strDeviceType)
-        {
-            AddDeviceName(DeviceType, strDevice);
-        }
+       // if(DeviceType == strDeviceType)
+        //{
+            AddDeviceName(strDeviceType, strDevice);
+        //}
 
+    }
+    if(item.count() == 100)
+    {
+        QString strMark = sett2.value(QString("bookmark")).toString();
+        if(!strMark.isEmpty())
+            GetDeviceByType(/*DeviceType,*/ strMark);
     }
 }
 
@@ -363,9 +370,20 @@ void MainWindow::slot_mousePressEvent(QMouseEvent* event)
                 menu.addAction("添加该类型设备");
                 menu.addAction("批量添加该类型设备");
                 menu.addAction("仿真该类型所有设备");
+                menu.addAction("仿真数据设置");
                 QAction* ac = menu.exec(event->globalPos());
                 if(ac != nullptr)
                 {
+                    if(ac->text() == QString("仿真数据设置"))
+                    {
+                        CSimulationSetDialog dlg;
+                        if(8 == dlg.exec())
+                        {
+                            simulationConfig config = dlg.GetConfig();
+                            mIotSimulation.setConfig(itemName, config);
+                        }
+
+                    }
                     if(ac->text() == QString("添加该类型设备"))
                     {
                         //同步服务器数据
@@ -388,8 +406,6 @@ void MainWindow::slot_mousePressEvent(QMouseEvent* event)
                     }
                     if(ac->text() == QString("批量添加该类型设备"))
                     {
-                        //批量添加
-
                         //批量添加设备
                         CAddDevicesDialog dlg;
                         QList<DeviceType> devTypeListTmp;
