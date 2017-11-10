@@ -39,8 +39,9 @@ CIotSimulation::CIotSimulation(QObject *parent) : QObject(parent)
     //mlatlonList
 }
 
-void CIotSimulation::SimulationDev(const QVariant& var)
+bool CIotSimulation::SimulationDev(const QVariant& var, QString& strError)
 {
+    strError = "";
     QVariantMap map = var.toMap();
     qDebug()<<"开始设备仿真！！";
     CQIotDevThread* iotDev = new CQIotDevThread();

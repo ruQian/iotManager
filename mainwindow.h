@@ -13,7 +13,7 @@ class CSettingDialog;
 class QNetworkAccessManager;
 class QNetworkReply;
 class QAuthenticator;
-
+class QNetworkRequest;
 
 
 
@@ -45,12 +45,16 @@ private slots:
     void slot_mousePressEvent(QMouseEvent* event);
 
 
+    void on_action_4_triggered();
+
 private:
     void AddDeviceType(const QString& DeviceType);
     void AddDeviceName(const QString& DeviceType, const QString& DeviceName);
     void GetDeviceByType(/*const QString& DeviceType,*/ const QString& bookMark = QString());
     //仿真一个设备！
     void SimulationDev(const QVariant& var);
+
+    void setUserPwd(QNetworkRequest& request);
 private:
     CSettingDialog* mSettingDlg;
     QNetworkAccessManager* man;

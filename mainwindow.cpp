@@ -12,6 +12,7 @@
 #include <QMouseEvent>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QMessageBox>
 #include <QMouseEvent>
 #include <QMenu>
 MainWindow::MainWindow(QWidget *parent) :
@@ -19,21 +20,17 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
-
-
     deviceInfoPath = QCoreApplication::applicationDirPath();
     deviceInfoPath += "/devicesInfo.txt";
     qDebug()<<deviceInfoPath;
-
     mSettingDlg = new CSettingDialog(this);
-
     ///
     man = new QNetworkAccessManager(this);
-
     //connect widget and treewidget
     connect(ui->treeWidget, SIGNAL(signal_rightPress(QMouseEvent*)),
             this, SLOT(slot_mousePressEvent(QMouseEvent*)));
+
+    ui->treeWidget->headerItem()->setText(0, QString("设备列表"));
 }
 
 MainWindow::~MainWindow()
@@ -77,7 +74,7 @@ void MainWindow::on_action_2_triggered()
     strUrl += "/api/v0002/device/types";
     qDebug()<<strUrl;
     QNetworkRequest request;
-    request.setRawHeader("Authorization","Basic YS14OGtiazgtcmtxYjR4MW53NzpOK3dIIXVRYysmanZvR1N3a0U=");
+    setUserPwd(request);
     request.setUrl(QUrl(strUrl));
     QNetworkReply* reply = man->get(request);
     QEventLoop eventLoop;
@@ -121,7 +118,7 @@ void MainWindow::GetDeviceByType(/*const QString& DeviceType,*/
     }
     qDebug()<<strUrl;
     QNetworkRequest request;
-    request.setRawHeader("Authorization","Basic YS14OGtiazgtcmtxYjR4MW53NzpOK3dIIXVRYysmanZvR1N3a0U=");
+    setUserPwd(request);
     request.setUrl(QUrl(strUrl));
     QNetworkReply* reply = man->get(request);
     QEventLoop eventLoop;
@@ -225,7 +222,7 @@ void MainWindow::slot_addDevType(QList<DeviceType> devTList)
         strUrl += "/api/v0002/device/types";
         qDebug()<<strUrl;
         QNetworkRequest request;
-        request.setRawHeader("Authorization","Basic YS14OGtiazgtcmtxYjR4MW53NzpOK3dIIXVRYysmanZvR1N3a0U=");
+        setUserPwd(request);
         request.setRawHeader("Content-Type", "application/json");
         QString strLen = QString("%1").arg(data.toUtf8().size());
         request.setRawHeader("Content-Length", strLen.toUtf8());
@@ -283,7 +280,7 @@ void MainWindow::slot_addDev(const QList<DeviceInfo>& deviceInfos)
         strUrl += "/devices";
         qDebug()<<strUrl;
         QNetworkRequest request;
-        request.setRawHeader("Authorization","Basic YS14OGtiazgtcmtxYjR4MW53NzpOK3dIIXVRYysmanZvR1N3a0U=");
+        setUserPwd(request);
         request.setRawHeader("Content-Type", "application/json");
         QString strLen = QString("%1").arg(data.toUtf8().size());
         request.setRawHeader("Content-Length", strLen.toUtf8());
@@ -452,15 +449,26 @@ void MainWindow::slot_mousePressEvent(QMouseEvent* event)
                                 QJsonArray arf = filed.array();
                                 //
                                 QVariantList devInfoList = arf.toVariantList();
-                                for(QVariantList::Iterator it = devInfoList.begin();
-                                            it != devInfoList.end(); ++it)
+                                QVariantList::Iterator it = devInfoList.begin();
+                                for(;it != devInfoList.end(); ++it)
                                 {
                                     QVariantMap map = (*it).toMap();
                                     if(map["deviceId"].toString() == deviceId &&
                                            map["typeId"].toString() == itemName)
                                     {
                                         SimulationDev(map);
+                                        //设置颜色
+                                        QColor color(0,205,0);
+                                        hildItem->setTextColor(0, color);
+                                        hildItem->setToolTip(0, QString("正在仿真..."));
+                                        break;
                                     }
+                                }
+                                if(it == devInfoList.end())
+                                {
+                                    QColor color(205,38,38);
+                                    hildItem->setTextColor(0, color);
+                                    hildItem->setToolTip(0, QString("仿真失败 本地没有发现key"));
                                 }
 
                             }
@@ -504,8 +512,25 @@ void MainWindow::slot_mousePressEvent(QMouseEvent* event)
 
 void MainWindow::SimulationDev(const QVariant& var)
 {
-    mIotSimulation.SimulationDev(var);
+    QString strErr;
+    mIotSimulation.SimulationDev(var, strErr);
+}
+void MainWindow::setUserPwd(QNetworkRequest& request)
+{
+    QString strAuth = "Basic ";
+    QString strUserPwd = mSettingDlg->mUserName;
+    strUserPwd += ":";
+    strUserPwd += mSettingDlg->mPassword;
+    QByteArray arrBasic = strUserPwd.toUtf8();
+    QString strBasic = arrBasic.toBase64();
+    strAuth += strBasic;
+    qDebug()<<strAuth;
+    request.setRawHeader("Authorization","Basic YS14OGtiazgtcmtxYjR4MW53NzpOK3dIIXVRYysmanZvR1N3a0U=");
 }
 
 
 
+void MainWindow::on_action_4_triggered()
+{
+    QMessageBox::about(NULL, "About", "<font color='red'>bluemix iot设备仿真软件V0.1(长城数字)</font>");
+}

@@ -13,7 +13,7 @@ class CIotSimulation : public QObject
 public:
     explicit CIotSimulation(QObject *parent = 0);
     //仿真一个设备！
-    void SimulationDev(const QVariant& var);
+    bool SimulationDev(const QVariant& var, QString& strError);
 
 
 
