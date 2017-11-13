@@ -17,5 +17,5 @@ void CAddDevTSigDlg::on_pushButton_clicked()
 {
     strDevType = ui->lineEdit->text();
     strDevDes = ui->lineEdit_2->text();
-    done(1);
+    done(8);
 }

@@ -3,7 +3,7 @@
 #include <adddevicesdialog.h>
 #include "adddevicedialog.h"
 #include "settingdialog.h"
-#include "adddevtdialog.h"
+#include "adddevtsigdlg.h"
 #include "SimulationSetDialog.h"
 #include <QNetworkRequest>
 #include <QAuthenticator>
@@ -128,10 +128,17 @@ void MainWindow::on_action_triggered()
 
 void MainWindow::on_actionADevT_triggered()
 {
-    CAddDevTDialog dlg;
-    connect(&dlg, SIGNAL(signal_addDevType(QList<DeviceType>)),
-            this, SLOT(slot_addDevType(QList<DeviceType>)));
-    dlg.exec();
+//    CAddDevTDialog dlg;
+//    connect(&dlg, SIGNAL(signal_addDevType(QList<DeviceType>)),
+//            this, SLOT(slot_addDevType(QList<DeviceType>)));
+    CAddDevTSigDlg dlg;
+    if(8 == dlg.exec())
+    {
+        DeviceType devT;
+        devT.mDevType = dlg.strDevType;
+        devT.mDevDes = dlg.strDevDes;
+        devManager->CreateDevType(devT);
+    }
 }
 
 void MainWindow::on_actionADev_triggered()
@@ -327,9 +334,29 @@ void MainWindow::slot_mousePressEvent(QMouseEvent* event)
                 menu.addAction("批量添加该类型设备");
                 menu.addAction("仿真该类型所有设备");
                 menu.addAction("仿真数据设置");
+                menu.addAction("删除设备类型");
                 QAction* ac = menu.exec(event->globalPos());
                 if(ac != nullptr)
                 {
+                    if(ac->text() == QString("删除设备类型"))
+                    {
+                        //得到该类型下的所有节点
+                        int childCount = item->childCount();
+                        for(int i = 0; i < childCount; ++i)
+                        {
+                            QTreeWidgetItem* hildItem = item->child(i);
+                            if(hildItem != nullptr)
+                            {
+                                //设备ID
+                                QString deviceId = hildItem->text(0);
+                                DeviceInfo devInfo;
+                                devInfo.mDevType = itemName;
+                                devInfo.mDevID = deviceId;
+                                devManager->DeleteDev(devInfo);
+                            }
+                        }
+                        devManager->DeleteDevType(itemName);
+                    }
                     if(ac->text() == QString("仿真数据设置"))
                     {
                         CSimulationSetDialog dlg;
@@ -484,7 +511,7 @@ void MainWindow::setUserPwd(QNetworkRequest& request)
     QString strBasic = arrBasic.toBase64();
     strAuth += strBasic;
     qDebug()<<strAuth;
-    request.setRawHeader("Authorization","Basic YS14OGtiazgtcmtxYjR4MW53NzpOK3dIIXVRYysmanZvR1N3a0U=");
+    request.setRawHeader("Authorization",strAuth.toUtf8());
 }
 void MainWindow::resizeEvent(QResizeEvent* e)
 {

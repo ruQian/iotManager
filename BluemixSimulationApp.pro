@@ -27,7 +27,8 @@ SOURCES += main.cpp\
     simulationsetdialog.cpp \
     devmanager.cpp \
     cdevmanagerthread.cpp \
-    waitwidget.cpp
+    waitwidget.cpp \
+    devtype/cdevtypebase.cpp
 
 HEADERS  += mainwindow.h \
     settingdialog.h \
@@ -42,7 +43,8 @@ HEADERS  += mainwindow.h \
     simulationsetdialog.h \
     devmanager.h \
     cdevmanagerthread.h \
-    waitwidget.h
+    waitwidget.h \
+    devtype/cdevtypebase.h
 
 FORMS    += mainwindow.ui \
     settingdialog.ui \

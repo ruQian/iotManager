@@ -88,6 +88,54 @@ QList<DeviceType> CDevManager::getDevType()
     }
     return devTypeList;
 }
+
+void CDevManager::CreateDevType(const DeviceType& devType)
+{
+    QString data = QString("{  \
+                            \"id\": \"%1\",\
+                           \"description\": \"21 \",\
+                           \"classId\": \"Device\",\
+                           \"deviceInfo\": {\
+                             \"serialNumber\": \"100087\",\
+                             \"manufacturer\": \"12\",\
+                             \"model\": \"12\",\
+                             \"deviceClass\": \"12\",\
+                             \"description\": \"12\",\
+                             \"fwVersion\": \"12\",\
+                             \"hwVersion\": \"12\",\
+                             \"descriptiveLocation\": \"12\"\
+                           },\
+                           \"metadata\": {\
+                             \"a\": \"12\",\
+                             \"b\": \"12\"\
+                           }\
+                         }").arg(devType.mDevType);
+    QScopedPointer<QNetworkAccessManager> man(new QNetworkAccessManager());
+    QString strUrl = "https://";
+    strUrl += mStrHost;
+    strUrl += "/api/v0002/device/types";
+    qDebug()<<strUrl;
+    QNetworkRequest request;
+    setUserPwd(request);
+    request.setRawHeader("Content-Type", "application/json");
+    QString strLen = QString("%1").arg(data.toUtf8().size());
+    request.setRawHeader("Content-Length", strLen.toUtf8());
+
+
+
+    request.setUrl(QUrl(strUrl));
+    QNetworkReply* reply = man->post(request, data.toUtf8());
+    QEventLoop eventLoop;
+    connect(reply, &QNetworkReply::finished, &eventLoop, &QEventLoop::quit);
+    eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
+    qDebug()<<reply->error();
+    QByteArray replyData = reply->readAll();
+    reply->deleteLater();
+    reply = nullptr;
+    qDebug()<<replyData;
+}
+
+
 void CDevManager::GetDevicesAsyn(QObject* ob, const char* slot)
 {
     toperThread->operType = 2;
@@ -95,6 +143,48 @@ void CDevManager::GetDevicesAsyn(QObject* ob, const char* slot)
             ob, slot);
     toperThread->start();
     return ;
+}
+QString CDevManager::DeleteDevType(const QString& devType)
+{
+    QScopedPointer<QNetworkAccessManager> man(new QNetworkAccessManager());
+    QString strUrl = "https://";
+    strUrl += mStrHost;
+    strUrl += "/api/v0002/device/types/";
+    strUrl += devType;
+
+    qDebug()<<strUrl;
+    QNetworkRequest request;
+    setUserPwd(request);
+    request.setUrl(QUrl(strUrl));
+    QNetworkReply* reply = man->deleteResource(request);
+    QEventLoop eventLoop;
+    connect(reply, &QNetworkReply::finished, &eventLoop, &QEventLoop::quit);
+    eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
+    qDebug()<<reply->error();
+    return QString();//reply->error();
+}
+
+QString CDevManager::DeleteDev(const DeviceInfo& devInfo)
+{
+    //device/types/{typeId}/devices/{deviceId}
+    QScopedPointer<QNetworkAccessManager> man(new QNetworkAccessManager());
+    QString strUrl = "https://";
+    strUrl += mStrHost;
+    strUrl += "/api/v0002/device/types/";
+    strUrl += devInfo.mDevType;
+    strUrl += "/devices/";
+    strUrl += devInfo.mDevID;
+
+    qDebug()<<strUrl;
+    QNetworkRequest request;
+    setUserPwd(request);
+    request.setUrl(QUrl(strUrl));
+    QNetworkReply* reply = man->deleteResource(request);
+    QEventLoop eventLoop;
+    connect(reply, &QNetworkReply::finished, &eventLoop, &QEventLoop::quit);
+    eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
+    qDebug()<<reply->error();
+    return QString();//reply->error();
 }
 QList<DeviceInfo> CDevManager::GetDevices(const QString& bookMark)
 {

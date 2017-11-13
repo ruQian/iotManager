@@ -20,9 +20,17 @@ public:
     //获取设备类型信息
     QList<DeviceType> getDevType();
     void getDevTypeAsyn(QObject* ob, const char* slot);
+    //创建设备类型
+    void CreateDevType(const DeviceType& devType);
+
     //获取设备信息
     void GetDevicesAsyn(QObject* ob, const char* slot);
     QList<DeviceInfo> GetDevices(const QString& bookMark = QString());
+    //删除设备类型
+    QString DeleteDevType(const QString& devType);
+
+    //删除一个设备
+    QString DeleteDev(const DeviceInfo& devInfo);
 private:
     void setUserPwd(QNetworkRequest& request);
 private:
