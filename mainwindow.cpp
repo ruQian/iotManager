@@ -12,8 +12,11 @@
 #include <QMouseEvent>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QResizeEvent>
 #include <QMessageBox>
 #include <QMouseEvent>
+#include "devmanager.h"
+#include "waitwidget.h"
 #include <QMenu>
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -25,12 +28,21 @@ MainWindow::MainWindow(QWidget *parent) :
     qDebug()<<deviceInfoPath;
     mSettingDlg = new CSettingDialog(this);
     ///
-    man = new QNetworkAccessManager(this);
+    man = new QNetworkAccessManager();
+    waitWidget = new CWaitWidget(this);
+    waitWidget->hide();
+
+    //////////
+    devManager = new CDevManager();
+    //////////
     //connect widget and treewidget
     connect(ui->treeWidget, SIGNAL(signal_rightPress(QMouseEvent*)),
             this, SLOT(slot_mousePressEvent(QMouseEvent*)));
 
     ui->treeWidget->headerItem()->setText(0, QString("设备列表"));
+
+    devManager->setHost(mSettingDlg->mHost);
+    devManager->setUserPwd(mSettingDlg->mUserName, mSettingDlg->mPassword);
 }
 
 MainWindow::~MainWindow()
@@ -65,102 +77,51 @@ void MainWindow::AddDeviceName(const QString& DeviceType,
 }
 void MainWindow::on_action_2_triggered()
 {
+    showWaitWidget();
+    devManager->getDevTypeAsyn(this, SLOT(slot_DeviceTypes(const QList<DeviceType>&)));
+}
+void MainWindow::GetDeviceByType()
+{
+    showWaitWidget();
+    devManager->GetDevicesAsyn(this, SLOT(slot_Devices(const QList<DeviceInfo>&)));
+    /*
+    QList<DeviceInfo> devList = devManager->GetDevices();
+    for(QList<DeviceInfo>::Iterator it = devList.begin();
+                    it != devList.end(); it++)
+    {
+        AddDeviceName((*it).mDevType, (*it).mDevID);
+    }*/
+}
+
+void MainWindow::slot_DeviceTypes(const QList<DeviceType>& devTypes)
+{
     ui->treeWidget->clear();
     devTypeList.clear();
 
-    QString strUrl = "https://";
-    strUrl += mSettingDlg->mOrg;
-    strUrl += mSettingDlg->mHost;
-    strUrl += "/api/v0002/device/types";
-    qDebug()<<strUrl;
-    QNetworkRequest request;
-    setUserPwd(request);
-    request.setUrl(QUrl(strUrl));
-    QNetworkReply* reply = man->get(request);
-    QEventLoop eventLoop;
-    connect(reply, &QNetworkReply::finished, &eventLoop, &QEventLoop::quit);
-    eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
-    qDebug()<<reply->error();
-    QByteArray replyData = reply->readAll();
-    reply->deleteLater();
-    reply = nullptr;
-    QJsonDocument d = QJsonDocument::fromJson(replyData);
-    QJsonObject sett2 = d.object();
-    QJsonValue value = sett2.value(QString("results"));
-    QJsonArray item = value.toArray();
-    for(int i = 0; i < item.count(); ++i)
+    devTypeList = devTypes;
+    for(QList<DeviceType>::Iterator it = devTypeList.begin();
+                    it != devTypeList.end(); it++)
     {
-        QJsonValue value = item.at(i);
-
-        QString strDevice = value.toObject()["id"].toString();
-        qDebug()<<strDevice;
-
-        AddDeviceType(strDevice);
-        //
-        DeviceType devtype;
-        devtype.mDevType = strDevice;
-        devTypeList.append(devtype);
+        AddDeviceType((*it).mDevType);
     }
+    hideWaitWidget();
     GetDeviceByType();
 }
-void MainWindow::GetDeviceByType(/*const QString& DeviceType,*/
-                                 const QString& bookMark)
+void MainWindow::slot_Devices(const QList<DeviceInfo>& devList)
 {
-    QString strUrl = "https://";
-    strUrl += mSettingDlg->mOrg;
-    strUrl += mSettingDlg->mHost;
-    strUrl += "/api/v0002/bulk/devices";
-    strUrl += "?_limit=100";
-    if(!bookMark.isEmpty())
+    for(QList<DeviceInfo>::const_iterator it = devList.begin();
+                    it != devList.end(); it++)
     {
-        strUrl+="&_bookmark=";
-        strUrl+=bookMark;
+        AddDeviceName((*it).mDevType, (*it).mDevID);
     }
-    qDebug()<<strUrl;
-    QNetworkRequest request;
-    setUserPwd(request);
-    request.setUrl(QUrl(strUrl));
-    QNetworkReply* reply = man->get(request);
-    QEventLoop eventLoop;
-    connect(reply, &QNetworkReply::finished, &eventLoop, &QEventLoop::quit);
-    eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
-    qDebug()<<reply->error();
-    QByteArray replyData = reply->readAll();
-    reply->deleteLater();
-    reply = nullptr;
-    QJsonDocument d = QJsonDocument::fromJson(replyData);
-    QJsonObject sett2 = d.object();
-    QJsonValue value = sett2.value(QString("results"));
-    qDebug()<<value;
-    QJsonArray item = value.toArray();
-    qDebug()<<replyData;
-
-    for(int i = 0; i < item.count(); ++i)
-    {
-        QJsonValue value = item.at(i);
-
-        QString strDevice = value.toObject()["deviceId"].toString();
-        qDebug()<<strDevice;
-
-        QString strDeviceType = value.toObject()["typeId"].toString();
-       // if(DeviceType == strDeviceType)
-        //{
-            AddDeviceName(strDeviceType, strDevice);
-        //}
-
-    }
-    if(item.count() == 100)
-    {
-        QString strMark = sett2.value(QString("bookmark")).toString();
-        if(!strMark.isEmpty())
-            GetDeviceByType(/*DeviceType,*/ strMark);
-    }
+    hideWaitWidget();
 }
-
 
 void MainWindow::on_action_triggered()
 {
     mSettingDlg->exec();
+    devManager->setHost(mSettingDlg->mHost);
+    devManager->setUserPwd(mSettingDlg->mUserName, mSettingDlg->mPassword);
 }
 
 
@@ -217,7 +178,6 @@ void MainWindow::slot_addDevType(QList<DeviceType> devTList)
 
 
         QString strUrl = "https://";
-        strUrl += mSettingDlg->mOrg;
         strUrl += mSettingDlg->mHost;
         strUrl += "/api/v0002/device/types";
         qDebug()<<strUrl;
@@ -273,7 +233,6 @@ void MainWindow::slot_addDev(const QList<DeviceInfo>& deviceInfos)
 
 
         QString strUrl = "https://";
-        strUrl += mSettingDlg->mOrg;
         strUrl += mSettingDlg->mHost;
         strUrl += "/api/v0002/device/types/";
         strUrl += (*it).mDevType;
@@ -527,9 +486,20 @@ void MainWindow::setUserPwd(QNetworkRequest& request)
     qDebug()<<strAuth;
     request.setRawHeader("Authorization","Basic YS14OGtiazgtcmtxYjR4MW53NzpOK3dIIXVRYysmanZvR1N3a0U=");
 }
-
-
-
+void MainWindow::resizeEvent(QResizeEvent* e)
+{
+    waitWidget->resize(e->size());
+}
+void MainWindow::showWaitWidget()
+{
+    QSize size = this->size();
+    waitWidget->resize(size);
+    waitWidget->show();
+}
+void MainWindow::hideWaitWidget()
+{
+    waitWidget->hide();
+}
 void MainWindow::on_action_4_triggered()
 {
     QMessageBox::about(NULL, "About", "<font color='red'>bluemix iot设备仿真软件V0.1(长城数字)</font>");
