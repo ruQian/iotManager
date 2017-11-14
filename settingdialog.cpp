@@ -1,18 +1,18 @@
 #include "settingdialog.h"
 #include "ui_settingdialog.h"
-
+#include <QSettings>
 CSettingDialog::CSettingDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::CSettingDialog)
 {
     ui->setupUi(this);
 
-    mOrg = "x8kbk8";
-    mHost = ".internetofthings.ibmcloud.com";
-    mUserName = "a-x8kbk8-rkqb4x1nw7";
-    mPassword = "N+wH!uQc+&jvoGSwkE";
-
-
+    QSettings *reg = new QSettings("HKEY_CURRENT_USER\\Software\\iotManager",
+    QSettings::NativeFormat);
+    mHost = reg->value("host","demo.internetofthings.ibmcloud.com").toString();
+    mUserName = reg->value("user").toString();
+    mPassword = reg->value("passwd").toString();
+    delete reg;
 }
 
 CSettingDialog::~CSettingDialog()
@@ -22,17 +22,19 @@ CSettingDialog::~CSettingDialog()
 
 void CSettingDialog::on_pushButton_clicked()
 {
-
-    mOrg = ui->lineEdit->text();
+    QSettings *reg = new QSettings("HKEY_CURRENT_USER\\Software\\iotManager",
+    QSettings::NativeFormat);
     mHost = ui->lineEdit_2->text();
     mUserName = ui->lineEdit_3->text();
     mPassword = ui->lineEdit_4->text();
-
+    reg->setValue("host",mHost);
+    reg->setValue("user",mUserName);
+    reg->setValue("passwd",mPassword);
+    delete reg;
     done(0);
 }
 int CSettingDialog::exec()
 {
-    ui->lineEdit->setText(mOrg);
     ui->lineEdit_2->setText(mHost);
     ui->lineEdit_3->setText(mUserName);
     ui->lineEdit_4->setText(mPassword);

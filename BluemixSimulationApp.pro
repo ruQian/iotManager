@@ -21,7 +21,14 @@ SOURCES += main.cpp\
     adddevtsigdlg.cpp \
     adddevicedialog.cpp \
     adddevicesdialog.cpp \
-    customtreewidget.cpp
+    customtreewidget.cpp \
+    iotsimulation.cpp \
+    qiotdevthread.cpp \
+    simulationsetdialog.cpp \
+    devmanager.cpp \
+    cdevmanagerthread.cpp \
+    waitwidget.cpp \
+    devtype/cdevtypebase.cpp
 
 HEADERS  += mainwindow.h \
     settingdialog.h \
@@ -30,11 +37,35 @@ HEADERS  += mainwindow.h \
     types.h \
     adddevicedialog.h \
     adddevicesdialog.h \
-    customtreewidget.h
+    customtreewidget.h \
+    iotsimulation.h \
+    qiotdevthread.h \
+    simulationsetdialog.h \
+    devmanager.h \
+    cdevmanagerthread.h \
+    waitwidget.h \
+    devtype/cdevtypebase.h
 
 FORMS    += mainwindow.ui \
     settingdialog.ui \
     adddevtdialog.ui \
     adddevtsigdlg.ui \
     adddevicedialog.ui \
-    adddevicesdialog.ui
+    adddevicesdialog.ui \
+    simulationsetdialog.ui \
+    waitwidget.ui
+
+
+
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib/ -lqmqtt
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib/ -lqmqttd
+
+INCLUDEPATH += $$PWD/mqtt
+DEPENDPATH += $$PWD/include
+
+DISTFILES += \
+    image/wait.gif
+
+
+

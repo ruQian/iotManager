@@ -4,7 +4,7 @@
 #include <QMainWindow>
 #include <QTreeWidget>
 #include "types.h"
-
+#include "iotsimulation.h"
 namespace Ui {
 class MainWindow;
 }
@@ -13,9 +13,9 @@ class CSettingDialog;
 class QNetworkAccessManager;
 class QNetworkReply;
 class QAuthenticator;
-
-
-
+class QNetworkRequest;
+class CDevManager;
+class CWaitWidget;
 
 class MainWindow : public QMainWindow
 {
@@ -44,16 +44,38 @@ private slots:
 
     void slot_mousePressEvent(QMouseEvent* event);
 
+
+    void on_action_4_triggered();
+
+    //
+    void slot_DeviceTypes(const QList<DeviceType>&);
+    void slot_Devices(const QList<DeviceInfo>&);
+
 private:
     void AddDeviceType(const QString& DeviceType);
     void AddDeviceName(const QString& DeviceType, const QString& DeviceName);
-    void GetDeviceByType(const QString& DeviceType);
+    void GetDeviceByType();
+    //仿真一个设备！
+    void SimulationDev(const QVariant& var);
+
+    void setUserPwd(QNetworkRequest& request);
 private:
+    void showWaitWidget();
+    void hideWaitWidget();
+private:
+    CWaitWidget* waitWidget;
+    CDevManager* devManager;
     CSettingDialog* mSettingDlg;
     QNetworkAccessManager* man;
     QString hosts;
+    //仿真类
+    CIotSimulation mIotSimulation;
 public:
+    //存放创建设备的信息文件
+    QString deviceInfoPath;
     QList<DeviceType> devTypeList;
+protected:
+    void resizeEvent(QResizeEvent* e);
 private:
     Ui::MainWindow *ui;
 };

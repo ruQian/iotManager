@@ -19,7 +19,6 @@ private slots:
 public Q_SLOTS:
     virtual int exec();
 public:
-    QString mOrg;
     QString mHost;
     QString mUserName;
     QString mPassword;
