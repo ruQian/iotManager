@@ -62,6 +62,7 @@ bool CIotSimulation::SimulationDev(const QVariant& var, QString& strError)
     }
     mIotDevList.append(iotDev);
     iotDev->start();
+    return true;
 }
 void CIotSimulation::setConfig(const QString& DeviceId,
                                const simulationConfig& config)

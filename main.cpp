@@ -3,6 +3,7 @@
 #include <QMutex>
 #include <QTime>
 #include <QFile>
+/*
 void MessageOutput(QtMsgType type , const QMessageLogContext &context , const QString &msg)
 {
     static QMutex mutex;
@@ -51,7 +52,7 @@ void MessageOutput(QtMsgType type , const QMessageLogContext &context , const QS
     logFile.close();
 
     mutex.unlock();
-}
+}*/
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
